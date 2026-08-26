@@ -8,6 +8,56 @@ Nanopb is a small code-size Protocol Buffers implementation in ansi C. It is
 especially suitable for use in microcontrollers, but fits any memory
 restricted system.
 
+## 📝 TypeScript 版本生成器项目
+
+本项目包含 TypeScript 版本的 nanopb 生成器实现（`generator-ts/` 目录）。
+
+**项目状态：** 🚀 原型阶段 - 核心功能已验证！
+
+### ✅ 已实现功能
+
+- ✅ Protocol Buffers 文件解析（基于 protobufjs）
+- ✅ 消息和枚举类型检测
+- ✅ C 代码生成（头文件和源文件）
+- ✅ 字段描述符和类型映射
+- ✅ 端到端测试验证
+
+### 🚀 快速开始
+
+```bash
+# 进入 TypeScript 生成器目录
+cd generator-ts
+
+# 安装依赖
+bun install
+
+# 生成代码
+bun run src/cli/main-complete.ts examples/user.proto
+
+# 查看生成结果
+cat debug/user.pb.h
+cat debug/user.pb.c
+```
+
+### 📂 项目结构
+
+```
+generator-ts/
+├── src/                    # 源代码
+│   ├── cli/               # 命令行工具
+│   ├── codegen/            # 代码生成器
+│   ├── core/               # 核心类
+│   ├── proto/              # Proto 解析
+│   └── types/              # 类型定义
+├── debug/                  # 调试文件和测试输出
+├── examples/               # 示例文件
+└── tests/                  # 测试套件（开发中）
+```
+
+### 🔧 开发状态
+
+当前版本为概念验证（PoC），核心功能已验证但需要优化细节。详见 `generator-ts/README.md`。
+
 * **Homepage:** https://jpa.kapsi.fi/nanopb/
 * **Git repository:** https://github.com/nanopb/nanopb/
 * **Documentation:** https://jpa.kapsi.fi/nanopb/docs/

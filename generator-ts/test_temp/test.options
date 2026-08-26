@@ -1,0 +1,5 @@
+
+# Options file for testing
+TestMessage max_size:128
+TestMessage.name max_size:64
+TestMessage.status type:FT_STATIC

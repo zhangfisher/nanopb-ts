@@ -1,0 +1,19 @@
+syntax = "proto3";
+package example;
+
+// Simple enum for status
+enum Status {
+  UNKNOWN = 0;
+  ACTIVE = 1;
+  INACTIVE = 2;
+  PENDING = 3;
+}
+
+// Simple message for user data
+message User {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  Status status = 4;
+  bool is_admin = 5;
+}

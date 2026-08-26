@@ -1,0 +1,160 @@
+syntax = "proto3";
+package vimp.restaurant;
+
+// ==========================================
+// VIMP协议基础导入
+// ==========================================
+import "vimp/base_attrs.proto";     // 公共属性
+import "vimp/base_events.proto";   // 公共事件  
+import "vimp/base_actions.proto";   // 公共动作
+import "vimp/base_status.proto";    // 公共状态
+import "vimp/common.proto";         // 通用消息类型
+
+// ==========================================
+// 1. 设备事件定义（部分组合公共事件）
+// ==========================================
+
+// 私有事件参数消息
+message ButtonPressParams {
+    uint32 key_id = 1;        // 按键ID: 1=服务键, 2=取消键, 3=结账键
+    string function_name = 2; // 当前配置的功能名称
+    uint32 timestamp = 3;     // 按键时间戳
+}
+
+message DeviceStatusParams {
+    string status = 1;        // 状态: idle, busy, error
+    string reason = 2;        // 状态变化原因
+    uint32 timestamp = 3;     // 时间戳
+}
+
+// 完整事件消息
+message CallerEvent {
+    uint32 code = 1;                      // 事件编码（公共255-235，私有1+）
+    optional uint32 level = 2;            // 事件级别 (0-3)，3表示告警
+    optional string message = 3;          // 事件信息（支持插值变量）
+    oneof params {
+        // 公共事件（部分组合）
+        vimp.PowerOnParams        power_on        = 255;  // 上电启动
+        vimp.PowerOffParams       power_off       = 254;  // 关机/断电
+        vimp.AttrChangeParams     attr_change     = 250;  // 属性变更
+        vimp.StatusChangeParams   status_change   = 249;  // 状态变更
+        vimp.LowBatteryParams     low_battery     = 243;  // 低电量
+        
+        // 私有事件
+        ButtonPressParams button_press = 1;   // 按键按下
+        DeviceStatusParams device_status = 2; // 设备状态变化
+    }
+}
+
+// ==========================================
+// 2. 设备动作定义（部分组合公共动作）
+// ==========================================
+
+// 私有动作参数消息
+message ConfigKeyParams {
+    uint32 key_id = 1;        // 按键ID: 1, 2, 3
+    string function_name = 2; // 功能名称，如"服务"、"取消"、"结账"
+    bool enabled = 3;         // 是否启用该按键
+}
+
+message SetLedParams {
+    string color = 1;        // 颜色: green, red, off
+    string pattern = 2;      // 闪烁模式: on, blink, off
+    uint32 duration = 3;     // 持续时间(毫秒)，0=永久
+}
+
+// 完整动作消息
+message CallerAction {
+    uint32 code = 1;  // 动作编码（公共255-238，私有1+）
+    oneof params {
+        // 公共动作（部分组合）
+        vimp.RebootParams       reboot       = 255;  // 重启设备
+        vimp.PowerOffParams     power_off    = 254;  // 关机/断电
+        vimp.SetModeParams      set_mode     = 251;  // 设置工作模式
+        vimp.SetVolumeParams    set_volume   = 246;  // 设置音量
+        vimp.SetMuteParams      set_mute     = 245;  // 静音/取消静音
+        
+        // 私有动作
+        ConfigKeyParams config_key = 1;  // 配置按键功能
+        SetLedParams    set_led    = 2;  // 控制指示灯
+    }
+}
+
+// ==========================================
+// 3. 设备属性定义（部分组合公共属性）
+// ==========================================
+message CallerAttrs {
+    // 公共属性（部分组合）
+    optional string sn      = 255;  // 设备序列号
+    optional string name    = 253;  // 设备名称  
+    optional string model   = 251;  // 设备型号
+    optional string version = 250;  // 固件版本
+    
+    // 私有属性（从1开始递增）
+    optional string location   = 1;  // 安装位置（如"桌位A-1"）
+    bool   vibration_enabled = 2;   // 是否启用震动提醒
+    uint32 volume           = 3;   // 音量等级（0-100）
+}
+
+// ==========================================
+// 4. 设备状态定义（部分组合公共状态）
+// ==========================================
+
+// 私有状态枚举
+enum BatteryStatusEnum {
+    CRITICAL = 0;  // 严重低电量(<10%)
+    LOW      = 1;  // 低电量(10-30%)  
+    NORMAL   = 2;  // 正常(30-100%)
+    CHARGING = 3;  // 充电中
+}
+
+// ==========================================
+// 5. 设备元数据声明表汇总
+// ==========================================
+
+// 事件声明表
+// ==========================================================
+// code | 名称           | 级别 | 参数消息           | 来源 | 说明
+// ==========================================================
+// 255  | POWER_ON       | 1    | PowerOnParams      | 公共 | 上电启动
+// 254  | POWER_OFF      | 1    | PowerOffParams     | 公共 | 关机/断电
+// 250  | ATTR_CHANGE    | 0    | AttrChangeParams   | 公共 | 属性变更
+// 249  | STATUS_CHANGE  | 1    | StatusChangeParams | 公共 | 状态变更  
+// 243  | LOW_BATTERY    | 2    | LowBatteryParams   | 公共 | 低电量告警
+// 1    | BUTTON_PRESS   | 0    | ButtonPressParams  | 私有 | 按键按下
+// 2    | DEVICE_STATUS  | 1    | DeviceStatusParams | 私有 | 设备状态变化
+// ==========================================================
+
+// 动作声明表
+// ==========================================================
+// code | 名称         | 参数消息          | 来源 | 说明
+// ==========================================================
+// 255  | REBOOT       | RebootParams      | 公共 | 重启设备
+// 254  | POWER_OFF    | PowerOffParams    | 公共 | 关机/断电
+// 251  | SET_MODE     | SetModeParams     | 公共 | 设置工作模式
+// 246  | SET_VOLUME   | SetVolumeParams   | 公共 | 设置音量
+// 245  | SET_MUTE     | SetMuteParams     | 公共 | 静音/取消静音
+// 1    | CONFIG_KEY   | ConfigKeyParams   | 私有 | 配置按键功能
+// 2    | SET_LED      | SetLedParams      | 私有 | 控制指示灯
+// ==========================================================
+
+// 属性声明表
+// ==========================================================
+// code | 名称        | 类型   | 默认值 | 只读 | 说明        | 来源
+// ==========================================================  
+// 255  | sn          | string | -     | ✔️  | 设备序列号  | 公共
+// 253  | name        | string | -     |     | 设备名称    | 公共
+// 251  | model       | string | -     | ✔️  | 设备型号    | 公共
+// 250  | version     | string | -     | ✔️  | 固件版本    | 公共
+// 1    | location    | string | -     |     | 安装位置    | 私有
+// 2    | vibration   | bool   | true  |     | 震动提醒    | 私有
+// 3    | volume      | uint32 | 80    |     | 音量等级    | 私有
+// ==========================================================
+
+// 状态声明表
+// ==========================================================
+// code | 名称    | 枚举              | 说明         | MQTT主题名 | 来源
+// ==========================================================
+// 255  | online  | OnlineStatusEnum  | 在线/离线    | online     | 公共
+// 1    | battery | BatteryStatusEnum | 电池电量状态 | battery    | 私有
+// ==========================================================

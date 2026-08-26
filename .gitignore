@@ -34,3 +34,5 @@ extra/poetry/build
 build/
 .idea
 .venv
+
+node_modules

@@ -1,0 +1,16 @@
+
+syntax = "proto3";
+package test.package;
+
+enum TestEnum {
+  VALUE_ZERO = 0;
+  VALUE_ONE = 1;
+  VALUE_TWO = 2;
+}
+
+message TestMessage {
+  int32 id = 1;
+  string name = 2;
+  bool is_active = 3;
+  TestEnum status = 4;
+}

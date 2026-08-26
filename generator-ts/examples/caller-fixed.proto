@@ -1,0 +1,60 @@
+syntax = "proto3";
+package vimp.restaurant;
+
+// 简化版本的caller.proto，用于测试
+// 移除了外部依赖，修复了字段ID冲突
+
+message ButtonPressParams {
+    uint32 key_id = 1;        // 按键ID: 1=服务键, 2=取消键, 3=结账键
+    string function_name = 2; // 当前配置的功能名称
+    uint32 timestamp = 3;     // 按键时间戳
+}
+
+message DeviceStatusParams {
+    string status = 1;        // 状态: idle, busy, error
+    string reason = 2;        // 状态变化原因
+    uint32 timestamp = 3;     // 时间戳
+}
+
+message CallerEvent {
+    uint32 code = 10;                     // ✅ 修改为10，避免与oneof字段冲突
+    optional uint32 level = 11;           // ✅ 修改为11
+    optional string message = 12;         // ✅ 修改为12
+    oneof params {
+        ButtonPressParams button_press = 1;   // ✅ 保留1-9给oneof字段使用
+        DeviceStatusParams device_status = 2; // ✅ 保留1-9给oneof字段使用
+    }
+}
+
+message ConfigKeyParams {
+    uint32 key_id = 1;        // 按键ID: 1, 2, 3
+    string function_name = 2; // 功能名称，如"服务"、"取消"、"结账"
+    bool enabled = 3;         // 是否启用该按键
+}
+
+message SetLedParams {
+    string color = 1;        // 颜色: green, red, off
+    string pattern = 2;      // 闪烁模式: on, blink, off
+    uint32 duration = 3;     // 持续时间(毫秒)，0=永久
+}
+
+message CallerAction {
+    uint32 code = 10;        // ✅ 修改为10，避免与oneof字段冲突
+    oneof params {
+        ConfigKeyParams config_key = 1;  // ✅ 保留1-9给oneof字段使用
+        SetLedParams    set_led    = 2;  // ✅ 保留1-9给oneof字段使用
+    }
+}
+
+message CallerAttrs {
+    optional string location   = 1;  // ✅ 修改ID
+    bool   vibration_enabled = 2;   // ✅ 修改ID
+    uint32 volume           = 3;   // ✅ 修改ID
+}
+
+enum BatteryStatusEnum {
+    CRITICAL = 0;  // 严重低电量(<10%)
+    LOW      = 1;  // 低电量(10-30%)
+    NORMAL   = 2;  // 正常(30-100%)
+    CHARGING = 3;  // 充电中
+}
